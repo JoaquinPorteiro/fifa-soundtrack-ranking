@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIFA Soundtrack Ranking</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⚽</span>
+      <h1>FIFA Soundtrack Ranking</h1>
+    </div>
+    <nav class="nav">
+      <a href="#vote" class="nav-link active" data-target="vote">Votar</a>
+      <a href="#ranking" class="nav-link" data-target="ranking">Ranking</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="vote" class="hero">
+      <div class="hero-head">
+        <h2>¿Cuál te gusta más?</h2>
+        <p class="subtitle">Hacé clic en tu favorita. El ranking se ajusta con sistema ELO (estilo ajedrez).</p>
+        <div class="stats">
+          <span><strong id="stat-matches">0</strong> duelos jugados</span>
+          <span><strong id="stat-songs">0</strong> canciones</span>
+        </div>
+      </div>
+
+      <div class="duel">
+        <button class="card" id="card-a" data-side="a">
+          <div class="card-fifa" data-field="fifa"></div>
+          <div class="card-title" data-field="title"></div>
+          <div class="card-artist" data-field="artist"></div>
+          <div class="card-rating" data-field="rating"></div>
+          <div class="card-pick">Elegir</div>
+        </button>
+
+        <div class="vs">VS</div>
+
+        <button class="card" id="card-b" data-side="b">
+          <div class="card-fifa" data-field="fifa"></div>
+          <div class="card-title" data-field="title"></div>
+          <div class="card-artist" data-field="artist"></div>
+          <div class="card-rating" data-field="rating"></div>
+          <div class="card-pick">Elegir</div>
+        </button>
+      </div>
+
+      <div class="skip-row">
+        <button id="skip-btn" class="ghost">Saltar duelo →</button>
+      </div>
+    </section>
+
+    <section id="ranking" class="ranking">
+      <div class="ranking-head">
+        <h2>Ranking general</h2>
+        <p class="subtitle">Ordenado por rating ELO. Inicial: 1500.</p>
+      </div>
+      <ol id="ranking-list" class="ranking-list"></ol>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Ratings guardados localmente en tu navegador.</span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
