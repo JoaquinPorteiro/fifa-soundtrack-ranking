@@ -430,6 +430,22 @@ main {
 .rank-row.top2 .rank-pos { color: var(--silver); }
 .rank-row.top3 .rank-pos { color: var(--bronze); }
 
+.rank-loading {
+  list-style: none;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+  font-size: 14px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  animation: rank-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes rank-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
 .rank-info { display: flex; flex-direction: column; gap: 2px; }
 .rank-title { font-weight: 700; font-size: 15px; }
 .rank-meta { color: var(--text-dim); font-size: 13px; }

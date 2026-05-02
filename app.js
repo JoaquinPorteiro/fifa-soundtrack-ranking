@@ -138,6 +138,15 @@ function renderDuel() {
   renderCard(voteRefs.cardB, currentPair[1]);
 }
 
+function updateCurrentDuelRatings() {
+  if (!voteRefs || !currentPair) return;
+  const [a, b] = currentPair;
+  const ratingA = voteRefs.cardA.querySelector('[data-field="rating"]');
+  const ratingB = voteRefs.cardB.querySelector('[data-field="rating"]');
+  if (ratingA) ratingA.innerHTML = `Rating <strong>${state.ratings[a.id].rating}</strong>`;
+  if (ratingB) ratingB.innerHTML = `Rating <strong>${state.ratings[b.id].rating}</strong>`;
+}
+
 async function handlePick(side) {
   if (!currentPair || voteInFlight || !voteRefs) return;
   voteInFlight = true;
@@ -296,11 +305,23 @@ if (isRankingPage) {
 
 (async function init() {
   renderStats();
-  if (isRankingPage) renderRanking();
 
-  await Promise.allSettled([fetchState(), fetchYoutubeIds()]);
+  // YouTube IDs is a static JSON file — fast. Wait for it so the first paint
+  // already includes the thumbnails, but DON'T block on the API (it can cold-start
+  // for ~10s on Vercel and would leave the cards visually empty until then).
+  await fetchYoutubeIds();
 
-  renderStats();
-  if (isRankingPage) renderRanking();
   if (isVotePage) renderDuel();
+  // Ranking is intentionally NOT rendered yet — its <ol> shows a "Cargando…"
+  // placeholder from HTML until fetchState() resolves with real ratings.
+
+  fetchState()
+    .then(() => {
+      if (isVotePage) updateCurrentDuelRatings();
+      if (isRankingPage) renderRanking();
+    })
+    .catch((err) => {
+      console.error("No pude cargar el estado:", err);
+      if (isRankingPage) renderRanking(); // fallback con defaults si la API falla
+    });
 })();
