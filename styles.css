@@ -475,22 +475,12 @@ main {
   .nav { gap: 2px; }
   .nav-link { padding: 6px 10px; font-size: 13px; }
 
-  .hero-head { margin-bottom: 18px; }
   .hero-head h2, .ranking-head h2 { font-size: 26px; }
   .stats { gap: 16px; font-size: 12px; }
 
-  .duel {
-    grid-template-columns: 1fr;
-    gap: 14px;
-    margin: 18px 0;
-  }
   .vs { justify-self: center; padding: 8px 12px; font-size: 13px; }
 
-  .card-body { padding: 16px 18px 20px; gap: 6px; }
-  .card-title { font-size: 22px; }
-  .card-artist { font-size: 15px; }
-  .card-pick { display: none; } /* hover hint isn't useful on touch */
-
+  .card-pick { display: none; }
   .media-play { width: 56px; height: 56px; }
 
   .ranking-controls {
@@ -507,6 +497,77 @@ main {
   .rank-rating { font-size: 16px; min-width: 48px; }
 
   .footer { padding: 18px 16px; }
+}
+
+/* Vote page on mobile: lock to viewport, fit both cards without scroll. */
+@media (max-width: 768px) {
+  body.vote-page {
+    height: 100vh;          /* fallback */
+    height: 100svh;         /* small viewport height: handles mobile chrome */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  body.vote-page main {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 12px 14px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  body.vote-page .hero {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.vote-page .hero-head {
+    flex: 0 0 auto;
+    margin-bottom: 10px;
+  }
+  body.vote-page .hero-head h2 { font-size: 22px; margin: 0; }
+  body.vote-page .hero-head .subtitle { display: none; }
+  body.vote-page .stats { margin-top: 6px; font-size: 11px; gap: 14px; }
+
+  body.vote-page .duel {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto 1fr;
+    gap: 8px;
+    margin: 4px 0 8px;
+  }
+
+  body.vote-page .card {
+    min-height: 0;
+    border-radius: 12px;
+  }
+  body.vote-page .card-media {
+    aspect-ratio: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  body.vote-page .card-body {
+    flex: 0 0 auto;
+    padding: 10px 14px 12px;
+    gap: 3px;
+  }
+  body.vote-page .card-fifa { font-size: 10px; padding: 3px 7px; }
+  body.vote-page .card-title { font-size: 17px; line-height: 1.15; }
+  body.vote-page .card-artist { font-size: 13px; }
+  body.vote-page .card-rating { font-size: 11px; margin-top: 2px; }
+
+  body.vote-page .vs { padding: 4px 10px; font-size: 11px; border-radius: 999px; }
+
+  body.vote-page .skip-row {
+    flex: 0 0 auto;
+    padding-bottom: 10px;
+    margin-top: 0;
+  }
+  body.vote-page .ghost { padding: 7px 14px; font-size: 13px; }
+
+  body.vote-page .footer { display: none; }
 }
 
 @media (max-width: 380px) {

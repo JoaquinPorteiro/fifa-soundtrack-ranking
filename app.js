@@ -13,6 +13,7 @@ const state = {
 };
 
 let youtubeIds = {};
+let youtubeStarts = {};
 
 const isVotePage = !!document.getElementById("card-a");
 const isRankingPage = !!document.getElementById("ranking-list");
@@ -34,6 +35,14 @@ async function fetchYoutubeIds() {
     const res = await fetch("./data/youtube_ids.json", { cache: "no-store" });
     if (!res.ok) return;
     youtubeIds = await res.json();
+  } catch {}
+}
+
+async function fetchYoutubeStarts() {
+  try {
+    const res = await fetch("./data/youtube_starts.json", { cache: "no-store" });
+    if (!res.ok) return;
+    youtubeStarts = await res.json();
   } catch {}
 }
 
@@ -106,10 +115,12 @@ function renderMedia(mediaEl, song) {
 function loadIframe(mediaEl, song) {
   const ytId = youtubeIds[song.id];
   if (!ytId) return;
+  const startSec = youtubeStarts[song.id];
+  const startParam = Number.isInteger(startSec) && startSec > 0 ? `&start=${startSec}` : "";
   mediaEl.innerHTML = `
     <iframe
       class="media-iframe"
-      src="https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1"
+      src="https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1${startParam}"
       title="${escapeHtml(song.title)} — ${escapeHtml(song.artist)}"
       frameborder="0"
       allow="autoplay; encrypted-media; picture-in-picture"
@@ -123,8 +134,8 @@ function renderCard(cardEl, song) {
   cardEl.querySelector('[data-field="fifa"]').textContent = song.fifa;
   cardEl.querySelector('[data-field="title"]').textContent = song.title;
   cardEl.querySelector('[data-field="artist"]').textContent = song.artist;
-  cardEl.querySelector('[data-field="rating"]').innerHTML =
-    `Rating <strong>${r.rating}</strong>`;
+  const ratingEl = cardEl.querySelector('[data-field="rating"]');
+  if (ratingEl) ratingEl.innerHTML = `Rating <strong>${r.rating}</strong>`;
   renderMedia(cardEl.querySelector('[data-field="media"]'), song);
   cardEl.classList.remove("win", "lose");
   cardEl.removeAttribute("aria-disabled");
@@ -306,10 +317,11 @@ if (isRankingPage) {
 (async function init() {
   renderStats();
 
-  // YouTube IDs is a static JSON file — fast. Wait for it so the first paint
-  // already includes the thumbnails, but DON'T block on the API (it can cold-start
-  // for ~10s on Vercel and would leave the cards visually empty until then).
-  await fetchYoutubeIds();
+  // YouTube IDs + chorus start times are static JSON files — fast. Wait for them
+  // so the first paint already includes thumbnails and the right start offset,
+  // but DON'T block on the API (it can cold-start for ~10s on Vercel and would
+  // leave the cards visually empty until then).
+  await Promise.all([fetchYoutubeIds(), fetchYoutubeStarts()]);
 
   if (isVotePage) renderDuel();
   // Ranking is intentionally NOT rendered yet — its <ol> shows a "Cargando…"

@@ -5,3 +5,4 @@ node_modules/
 .vercel
 .DS_Store
 data/youtube_ids.log
+data/youtube_starts.log
