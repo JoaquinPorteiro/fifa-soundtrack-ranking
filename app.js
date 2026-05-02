@@ -2,27 +2,22 @@ import { SONGS } from "./songs.js";
 
 const INITIAL_RATING = 1500;
 const POLL_INTERVAL_MS = 12_000;
+const FILTER_STORAGE_KEY = "ranking-filter-edition";
+const EDITIONS = [...new Set(SONGS.map((s) => s.fifa))];
 
 const state = {
   ratings: Object.fromEntries(
     SONGS.map((s) => [s.id, { rating: INITIAL_RATING, wins: 0, losses: 0, matches: 0 }])
   ),
   totalMatches: 0,
-  loading: true,
 };
 
-const els = {
-  cardA: document.getElementById("card-a"),
-  cardB: document.getElementById("card-b"),
-  skipBtn: document.getElementById("skip-btn"),
-  list: document.getElementById("ranking-list"),
-  statMatches: document.getElementById("stat-matches"),
-  statSongs: document.getElementById("stat-songs"),
-  navLinks: document.querySelectorAll(".nav-link"),
-};
+let youtubeIds = {};
 
-let currentPair = null;
-let voteInFlight = false;
+const isVotePage = !!document.getElementById("card-a");
+const isRankingPage = !!document.getElementById("ranking-list");
+
+// ---------- Shared API ----------
 
 async function fetchState() {
   const res = await fetch("/api/state", { cache: "no-store" });
@@ -32,7 +27,14 @@ async function fetchState() {
     if (state.ratings[id]) state.ratings[id] = data.ratings[id];
   }
   state.totalMatches = data.totalMatches;
-  state.loading = false;
+}
+
+async function fetchYoutubeIds() {
+  try {
+    const res = await fetch("./data/youtube_ids.json", { cache: "no-store" });
+    if (!res.ok) return;
+    youtubeIds = await res.json();
+  } catch {}
 }
 
 async function postVote(winnerId, loserId) {
@@ -47,6 +49,27 @@ async function postVote(winnerId, loserId) {
   }
   return res.json();
 }
+
+// ---------- Shared helpers ----------
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function renderStats() {
+  const m = document.getElementById("stat-matches");
+  const s = document.getElementById("stat-songs");
+  if (m) m.textContent = state.totalMatches;
+  if (s) s.textContent = SONGS.length;
+}
+
+// ---------- Vote page ----------
+
+let currentPair = null;
+let voteInFlight = false;
+let voteRefs = null;
 
 function pickPair() {
   if (SONGS.length < 2) return null;
@@ -63,30 +86,162 @@ function pickPair() {
   return [a, b];
 }
 
+function renderMedia(mediaEl, song) {
+  const ytId = youtubeIds[song.id];
+  if (!ytId) {
+    const q = encodeURIComponent(`${song.title} ${song.artist}`);
+    mediaEl.innerHTML = `
+      <div class="media-fallback">
+        <a class="media-search" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener" data-no-vote>
+          ↗ Buscar en YouTube
+        </a>
+      </div>`;
+    return;
+  }
+  mediaEl.innerHTML = `
+    <img class="media-thumb" src="https://i.ytimg.com/vi/${ytId}/mqdefault.jpg" alt="" loading="lazy" />
+    <button type="button" class="media-play" data-no-vote aria-label="Reproducir preview">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+    </button>`;
+}
+
+function loadIframe(mediaEl, song) {
+  const ytId = youtubeIds[song.id];
+  if (!ytId) return;
+  mediaEl.innerHTML = `
+    <iframe
+      class="media-iframe"
+      src="https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1"
+      title="${escapeHtml(song.title)} — ${escapeHtml(song.artist)}"
+      frameborder="0"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen
+      data-no-vote></iframe>`;
+}
+
 function renderCard(cardEl, song) {
   const r = state.ratings[song.id];
+  cardEl.dataset.songId = song.id;
   cardEl.querySelector('[data-field="fifa"]').textContent = song.fifa;
   cardEl.querySelector('[data-field="title"]').textContent = song.title;
   cardEl.querySelector('[data-field="artist"]').textContent = song.artist;
   cardEl.querySelector('[data-field="rating"]').innerHTML =
     `Rating <strong>${r.rating}</strong> · ${r.matches} duelos`;
+  renderMedia(cardEl.querySelector('[data-field="media"]'), song);
   cardEl.classList.remove("win", "lose");
-  cardEl.disabled = false;
+  cardEl.removeAttribute("aria-disabled");
 }
 
 function renderDuel() {
+  if (!voteRefs) return;
   currentPair = pickPair();
   if (!currentPair) return;
-  renderCard(els.cardA, currentPair[0]);
-  renderCard(els.cardB, currentPair[1]);
+  renderCard(voteRefs.cardA, currentPair[0]);
+  renderCard(voteRefs.cardB, currentPair[1]);
 }
 
+async function handlePick(side) {
+  if (!currentPair || voteInFlight || !voteRefs) return;
+  voteInFlight = true;
+
+  const [a, b] = currentPair;
+  const winner = side === "a" ? a : b;
+  const loser = side === "a" ? b : a;
+  const winnerEl = side === "a" ? voteRefs.cardA : voteRefs.cardB;
+  const loserEl = side === "a" ? voteRefs.cardB : voteRefs.cardA;
+
+  winnerEl.classList.add("win");
+  loserEl.classList.add("lose");
+  voteRefs.cardA.setAttribute("aria-disabled", "true");
+  voteRefs.cardB.setAttribute("aria-disabled", "true");
+
+  try {
+    const result = await postVote(winner.id, loser.id);
+    state.ratings[result.winnerId].rating = result.winnerRating;
+    state.ratings[result.winnerId].wins += 1;
+    state.ratings[result.winnerId].matches += 1;
+    state.ratings[result.loserId].rating = result.loserRating;
+    state.ratings[result.loserId].losses += 1;
+    state.ratings[result.loserId].matches += 1;
+    state.totalMatches += 1;
+    renderStats();
+  } catch (err) {
+    console.error(err);
+    winnerEl.classList.remove("win");
+    loserEl.classList.remove("lose");
+    alert("No se pudo registrar el voto. Probá de nuevo.");
+  } finally {
+    voteInFlight = false;
+    setTimeout(() => renderDuel(), 380);
+  }
+}
+
+function attachCardHandlers(cardEl, side) {
+  cardEl.addEventListener("click", (e) => {
+    if (e.target.closest("[data-no-vote]")) return;
+    if (cardEl.getAttribute("aria-disabled") === "true") return;
+    handlePick(side);
+  });
+  cardEl.addEventListener("keydown", (e) => {
+    if (e.target !== cardEl) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handlePick(side);
+    }
+  });
+}
+
+function handleMediaClick(e) {
+  const playBtn = e.target.closest(".media-play");
+  if (!playBtn) return;
+  e.stopPropagation();
+  const cardEl = playBtn.closest(".card");
+  if (!cardEl || !currentPair) return;
+  const side = cardEl.dataset.side;
+  const song = side === "a" ? currentPair[0] : currentPair[1];
+  loadIframe(cardEl.querySelector('[data-field="media"]'), song);
+}
+
+if (isVotePage) {
+  voteRefs = {
+    cardA: document.getElementById("card-a"),
+    cardB: document.getElementById("card-b"),
+    skipBtn: document.getElementById("skip-btn"),
+  };
+  attachCardHandlers(voteRefs.cardA, "a");
+  attachCardHandlers(voteRefs.cardB, "b");
+  voteRefs.cardA.addEventListener("click", handleMediaClick, true);
+  voteRefs.cardB.addEventListener("click", handleMediaClick, true);
+  voteRefs.skipBtn.addEventListener("click", () => renderDuel());
+
+  window.addEventListener("keydown", (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    if (e.target.tagName === "IFRAME") return;
+    if (e.key === "ArrowLeft") { e.preventDefault(); handlePick("a"); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); handlePick("b"); }
+    else if (e.key === " ") { e.preventDefault(); renderDuel(); }
+  });
+}
+
+// ---------- Ranking page ----------
+
+let rankingFilter = localStorage.getItem(FILTER_STORAGE_KEY) || "";
+let rankingRefs = null;
+
 function renderRanking() {
-  const ranked = [...SONGS]
+  if (!rankingRefs) return;
+  const pool = rankingFilter
+    ? SONGS.filter((s) => s.fifa === rankingFilter)
+    : SONGS;
+  const ranked = pool
     .map((s) => ({ ...s, ...state.ratings[s.id] }))
     .sort((a, b) => b.rating - a.rating || b.wins - a.wins);
 
-  els.list.innerHTML = ranked
+  if (rankingRefs.filterCount) {
+    rankingRefs.filterCount.textContent = `${ranked.length} canciones`;
+  }
+
+  rankingRefs.list.innerHTML = ranked
     .map((s, i) => {
       const pos = i + 1;
       const topClass = pos === 1 ? "top1" : pos === 2 ? "top2" : pos === 3 ? "top3" : "";
@@ -105,95 +260,50 @@ function renderRanking() {
     .join("");
 }
 
-function renderStats() {
-  els.statMatches.textContent = state.totalMatches;
-  els.statSongs.textContent = SONGS.length;
-}
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
-}
-
-async function handlePick(side) {
-  if (!currentPair || voteInFlight) return;
-  voteInFlight = true;
-
-  const [a, b] = currentPair;
-  const winner = side === "a" ? a : b;
-  const loser = side === "a" ? b : a;
-  const winnerEl = side === "a" ? els.cardA : els.cardB;
-  const loserEl = side === "a" ? els.cardB : els.cardA;
-
-  winnerEl.classList.add("win");
-  loserEl.classList.add("lose");
-  els.cardA.disabled = true;
-  els.cardB.disabled = true;
-
-  try {
-    const result = await postVote(winner.id, loser.id);
-    state.ratings[result.winnerId].rating = result.winnerRating;
-    state.ratings[result.winnerId].wins += 1;
-    state.ratings[result.winnerId].matches += 1;
-    state.ratings[result.loserId].rating = result.loserRating;
-    state.ratings[result.loserId].losses += 1;
-    state.ratings[result.loserId].matches += 1;
-    state.totalMatches += 1;
-    renderStats();
-    renderRanking();
-  } catch (err) {
-    console.error(err);
-    winnerEl.classList.remove("win");
-    loserEl.classList.remove("lose");
-    alert("No se pudo registrar el voto. Probá de nuevo.");
-  } finally {
-    voteInFlight = false;
-    setTimeout(() => renderDuel(), 380);
+function populateFilter() {
+  if (!rankingRefs?.filter) return;
+  for (const ed of EDITIONS) {
+    const opt = document.createElement("option");
+    opt.value = ed;
+    opt.textContent = ed;
+    rankingRefs.filter.appendChild(opt);
   }
+  rankingRefs.filter.value = rankingFilter;
+  rankingRefs.filter.addEventListener("change", () => {
+    rankingFilter = rankingRefs.filter.value;
+    if (rankingFilter) localStorage.setItem(FILTER_STORAGE_KEY, rankingFilter);
+    else localStorage.removeItem(FILTER_STORAGE_KEY);
+    renderRanking();
+  });
 }
 
-els.cardA.addEventListener("click", () => handlePick("a"));
-els.cardB.addEventListener("click", () => handlePick("b"));
-els.skipBtn.addEventListener("click", () => renderDuel());
+if (isRankingPage) {
+  rankingRefs = {
+    list: document.getElementById("ranking-list"),
+    filter: document.getElementById("ranking-filter"),
+    filterCount: document.getElementById("filter-count"),
+  };
+  populateFilter();
 
-const sections = ["vote", "ranking"].map((id) => document.getElementById(id));
-const setActiveLink = (id) => {
-  els.navLinks.forEach((a) => a.classList.toggle("active", a.dataset.target === id));
-};
-const observer = new IntersectionObserver(
-  (entries) => {
-    for (const e of entries) if (e.isIntersecting) setActiveLink(e.target.id);
-  },
-  { rootMargin: "-40% 0px -55% 0px" }
-);
-sections.forEach((s) => s && observer.observe(s));
+  // Live-refresh from other users' votes while the tab is visible.
+  setInterval(() => {
+    if (document.hidden) return;
+    fetchState().then(() => {
+      renderStats();
+      renderRanking();
+    }).catch(() => {});
+  }, POLL_INTERVAL_MS);
+}
 
-window.addEventListener("keydown", (e) => {
-  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-  if (e.key === "ArrowLeft") { e.preventDefault(); handlePick("a"); }
-  else if (e.key === "ArrowRight") { e.preventDefault(); handlePick("b"); }
-  else if (e.key === " ") { e.preventDefault(); renderDuel(); }
-});
-
-// Live-refresh ranking from other users' votes while the tab is visible.
-setInterval(() => {
-  if (document.hidden || voteInFlight) return;
-  fetchState().then(() => {
-    renderStats();
-    renderRanking();
-  }).catch(() => {});
-}, POLL_INTERVAL_MS);
+// ---------- Init ----------
 
 (async function init() {
   renderStats();
-  renderRanking();
-  try {
-    await fetchState();
-  } catch (err) {
-    console.error("No pude cargar el estado:", err);
-  }
+  if (isRankingPage) renderRanking();
+
+  await Promise.allSettled([fetchState(), fetchYoutubeIds()]);
+
   renderStats();
-  renderRanking();
-  renderDuel();
+  if (isRankingPage) renderRanking();
+  if (isVotePage) renderDuel();
 })();

@@ -41,11 +41,17 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 
-.brand {
+.brand { display: flex; align-items: center; }
+
+.brand-link {
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.15s ease;
 }
+.brand-link:hover { opacity: 0.85; }
 
 .brand h1 {
   font-size: 18px;
@@ -136,17 +142,102 @@ main {
   background: linear-gradient(145deg, var(--bg-elev) 0%, var(--bg-elev-2) 100%);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 32px 24px;
   text-align: left;
   cursor: pointer;
   color: var(--text);
   font-family: inherit;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card[aria-disabled="true"] { cursor: default; }
+
+.card-body {
+  padding: 20px 24px 28px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
+}
+
+.card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.85);
+  transition: filter 0.2s ease, transform 0.4s ease;
+}
+.card:hover .media-thumb { filter: brightness(0.7); transform: scale(1.04); }
+
+.media-play {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  padding: 0;
+  padding-left: 4px;
+  backdrop-filter: blur(4px);
+}
+.media-play:hover {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+.media-play svg { display: block; }
+
+.media-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.media-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1f2b 0%, #0f131c 100%);
+}
+.media-search {
+  color: var(--text-dim);
+  font-size: 13px;
+  text-decoration: none;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: all 0.15s ease;
+}
+.media-search:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .card::before {
@@ -209,8 +300,8 @@ main {
 
 .card-pick {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  bottom: 14px;
+  right: 18px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -218,6 +309,7 @@ main {
   color: var(--text-dim);
   opacity: 0;
   transition: opacity 0.15s ease;
+  pointer-events: none;
 }
 .card:hover .card-pick { opacity: 1; color: var(--accent); }
 
@@ -254,6 +346,55 @@ main {
   margin-top: 80px;
   padding-top: 40px;
   border-top: 1px solid var(--border);
+}
+
+/* Standalone ranking page (no preceding section). */
+.ranking-page {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.ranking-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.ranking-controls label {
+  color: var(--text-dim);
+}
+
+.filter-select {
+  background: var(--bg-elev);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 32px 8px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%238b95a7' d='M6 9L1 4h10z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s ease;
+}
+
+.filter-select:hover { border-color: var(--text-dim); }
+.filter-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.filter-count {
+  color: var(--text-dim);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .ranking-list {
@@ -317,14 +458,64 @@ main {
   border-top: 1px solid var(--border);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
+  main { padding: 28px 16px 60px; }
+
+  .topbar { padding: 12px 16px; }
+  .brand h1 { font-size: 16px; }
+  .nav { gap: 2px; }
+  .nav-link { padding: 6px 10px; font-size: 13px; }
+
+  .hero-head { margin-bottom: 18px; }
+  .hero-head h2, .ranking-head h2 { font-size: 26px; }
+  .stats { gap: 16px; font-size: 12px; }
+
   .duel {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 14px;
+    margin: 18px 0;
   }
-  .vs { justify-self: center; }
-  .hero-head h2, .ranking-head h2 { font-size: 28px; }
+  .vs { justify-self: center; padding: 8px 12px; font-size: 13px; }
+
+  .card-body { padding: 16px 18px 20px; gap: 6px; }
   .card-title { font-size: 22px; }
-  .rank-row { grid-template-columns: 36px 1fr auto; gap: 10px; padding: 12px; }
+  .card-artist { font-size: 15px; }
+  .card-pick { display: none; } /* hover hint isn't useful on touch */
+
+  .media-play { width: 56px; height: 56px; }
+
+  .ranking-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    text-align: left;
+  }
+  .filter-select { width: 100%; }
+
+  .rank-row { grid-template-columns: 36px 1fr auto; gap: 10px; padding: 12px 14px; }
+  .rank-title { font-size: 14px; }
+  .rank-meta { font-size: 12px; }
+  .rank-rating { font-size: 16px; min-width: 48px; }
   .rank-record { display: none; }
+
+  .footer { padding: 18px 16px; }
+}
+
+@media (max-width: 380px) {
+  .brand h1 { display: none; } /* logo solo, evita wrap del topbar */
+  .hero-head h2, .ranking-head h2 { font-size: 22px; }
+  .card-title { font-size: 20px; }
+  .nav-link { padding: 6px 8px; }
+}
+
+/* Touch / no-hover devices: kill hover transforms that linger after tap. */
+@media (hover: none) {
+  .card:hover {
+    transform: none;
+    border-color: var(--border);
+    box-shadow: none;
+  }
+  .card:hover::before { opacity: 0; }
+  .card:hover .media-thumb { filter: brightness(0.85); transform: none; }
+  .filter-select:hover { border-color: var(--border); }
 }

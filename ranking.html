@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ranking · FIFA Soundtrack Ranking</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a href="/" class="brand-link">
+        <span class="logo">⚽</span>
+        <h1>FIFA Soundtrack Ranking</h1>
+      </a>
+    </div>
+    <nav class="nav">
+      <a href="/" class="nav-link">Votar</a>
+      <a href="/ranking.html" class="nav-link active">Ranking</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="ranking" class="ranking ranking-page">
+      <div class="ranking-head">
+        <h2>Ranking general</h2>
+        <p class="subtitle">Ordenado por rating ELO. Rating inicial: 1500.</p>
+        <div class="stats">
+          <span><strong id="stat-matches">0</strong> duelos jugados</span>
+          <span><strong id="stat-songs">0</strong> canciones</span>
+        </div>
+        <div class="ranking-controls">
+          <label for="ranking-filter">Filtrar por edición</label>
+          <select id="ranking-filter" class="filter-select">
+            <option value="">Todas las ediciones</option>
+          </select>
+          <span class="filter-count" id="filter-count"></span>
+        </div>
+      </div>
+      <ol id="ranking-list" class="ranking-list"></ol>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Ranking compartido y persistente.</span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

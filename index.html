@@ -9,12 +9,14 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="logo">⚽</span>
-      <h1>FIFA Soundtrack Ranking</h1>
+      <a href="/" class="brand-link">
+        <span class="logo">⚽</span>
+        <h1>FIFA Soundtrack Ranking</h1>
+      </a>
     </div>
     <nav class="nav">
-      <a href="#vote" class="nav-link active" data-target="vote">Votar</a>
-      <a href="#ranking" class="nav-link" data-target="ranking">Ranking</a>
+      <a href="/" class="nav-link active">Votar</a>
+      <a href="/ranking.html" class="nav-link">Ranking</a>
     </nav>
   </header>
 
@@ -30,41 +32,39 @@
       </div>
 
       <div class="duel">
-        <button class="card" id="card-a" data-side="a">
-          <div class="card-fifa" data-field="fifa"></div>
-          <div class="card-title" data-field="title"></div>
-          <div class="card-artist" data-field="artist"></div>
-          <div class="card-rating" data-field="rating"></div>
+        <div class="card" id="card-a" data-side="a" role="button" tabindex="0">
+          <div class="card-media" data-field="media"></div>
+          <div class="card-body">
+            <div class="card-fifa" data-field="fifa"></div>
+            <div class="card-title" data-field="title"></div>
+            <div class="card-artist" data-field="artist"></div>
+            <div class="card-rating" data-field="rating"></div>
+          </div>
           <div class="card-pick">Elegir</div>
-        </button>
+        </div>
 
         <div class="vs">VS</div>
 
-        <button class="card" id="card-b" data-side="b">
-          <div class="card-fifa" data-field="fifa"></div>
-          <div class="card-title" data-field="title"></div>
-          <div class="card-artist" data-field="artist"></div>
-          <div class="card-rating" data-field="rating"></div>
+        <div class="card" id="card-b" data-side="b" role="button" tabindex="0">
+          <div class="card-media" data-field="media"></div>
+          <div class="card-body">
+            <div class="card-fifa" data-field="fifa"></div>
+            <div class="card-title" data-field="title"></div>
+            <div class="card-artist" data-field="artist"></div>
+            <div class="card-rating" data-field="rating"></div>
+          </div>
           <div class="card-pick">Elegir</div>
-        </button>
+        </div>
       </div>
 
       <div class="skip-row">
         <button id="skip-btn" class="ghost">Saltar duelo →</button>
       </div>
     </section>
-
-    <section id="ranking" class="ranking">
-      <div class="ranking-head">
-        <h2>Ranking general</h2>
-        <p class="subtitle">Ordenado por rating ELO. Inicial: 1500.</p>
-      </div>
-      <ol id="ranking-list" class="ranking-list"></ol>
-    </section>
   </main>
 
   <footer class="footer">
-    <span>Ratings guardados localmente en tu navegador.</span>
+    <span>Ranking compartido y persistente. Tu voto cuenta para todos.</span>
   </footer>
 
   <script type="module" src="app.js"></script>
