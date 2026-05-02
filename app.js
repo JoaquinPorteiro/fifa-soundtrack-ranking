@@ -59,9 +59,7 @@ function escapeHtml(str) {
 }
 
 function renderStats() {
-  const m = document.getElementById("stat-matches");
   const s = document.getElementById("stat-songs");
-  if (m) m.textContent = state.totalMatches;
   if (s) s.textContent = SONGS.length;
 }
 
@@ -126,7 +124,7 @@ function renderCard(cardEl, song) {
   cardEl.querySelector('[data-field="title"]').textContent = song.title;
   cardEl.querySelector('[data-field="artist"]').textContent = song.artist;
   cardEl.querySelector('[data-field="rating"]').innerHTML =
-    `Rating <strong>${r.rating}</strong> · ${r.matches} duelos`;
+    `Rating <strong>${r.rating}</strong>`;
   renderMedia(cardEl.querySelector('[data-field="media"]'), song);
   cardEl.classList.remove("win", "lose");
   cardEl.removeAttribute("aria-disabled");
@@ -253,7 +251,6 @@ function renderRanking() {
             <div class="rank-title">${escapeHtml(s.title)} <span style="color:var(--text-dim);font-weight:500"> — ${escapeHtml(s.artist)}</span></div>
             <div class="rank-meta">${escapeHtml(s.fifa)}</div>
           </div>
-          <div class="rank-record">${s.wins}V · ${s.losses}D</div>
           <div class="rank-rating">${s.rating}</div>
         </li>`;
     })
