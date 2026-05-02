@@ -100,14 +100,14 @@ function renderMedia(mediaEl, song) {
     mediaEl.innerHTML = `
       <div class="media-fallback">
         <a class="media-search" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener" data-no-vote>
-          ↗ Buscar en YouTube
+          ↗ Search on YouTube
         </a>
       </div>`;
     return;
   }
   mediaEl.innerHTML = `
     <img class="media-thumb" src="https://i.ytimg.com/vi/${ytId}/mqdefault.jpg" alt="" loading="lazy" />
-    <button type="button" class="media-play" data-no-vote aria-label="Reproducir preview">
+    <button type="button" class="media-play" data-no-vote aria-label="Play preview">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
     </button>`;
 }
@@ -187,7 +187,7 @@ async function handlePick(side) {
     console.error(err);
     winnerEl.classList.remove("win");
     loserEl.classList.remove("lose");
-    alert("No se pudo registrar el voto. Probá de nuevo.");
+    alert("Couldn't record your vote. Try again.");
   } finally {
     voteInFlight = false;
     setTimeout(() => renderDuel(), 380);
@@ -256,7 +256,7 @@ function renderRanking() {
     .sort((a, b) => b.rating - a.rating || b.wins - a.wins);
 
   if (rankingRefs.filterCount) {
-    rankingRefs.filterCount.textContent = `${ranked.length} canciones`;
+    rankingRefs.filterCount.textContent = `${ranked.length} songs`;
   }
 
   rankingRefs.list.innerHTML = ranked
@@ -324,7 +324,7 @@ if (isRankingPage) {
   await Promise.all([fetchYoutubeIds(), fetchYoutubeStarts()]);
 
   if (isVotePage) renderDuel();
-  // Ranking is intentionally NOT rendered yet — its <ol> shows a "Cargando…"
+  // Ranking is intentionally NOT rendered yet — its <ol> shows a "Loading…"
   // placeholder from HTML until fetchState() resolves with real ratings.
 
   fetchState()
@@ -333,7 +333,7 @@ if (isRankingPage) {
       if (isRankingPage) renderRanking();
     })
     .catch((err) => {
-      console.error("No pude cargar el estado:", err);
-      if (isRankingPage) renderRanking(); // fallback con defaults si la API falla
+      console.error("Failed to load state:", err);
+      if (isRankingPage) renderRanking(); // fallback to defaults if API fails
     });
 })();

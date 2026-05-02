@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,7 +15,7 @@
       </a>
     </div>
     <nav class="nav">
-      <a href="/" class="nav-link active">Votar</a>
+      <a href="/" class="nav-link active">Vote</a>
       <a href="/ranking.html" class="nav-link">Ranking</a>
     </nav>
   </header>
@@ -23,10 +23,10 @@
   <main>
     <section id="vote" class="hero">
       <div class="hero-head">
-        <h2>¿Cuál te gusta más?</h2>
-        <p class="subtitle">Hacé clic en tu favorita.</p>
+        <h2>Which one do you prefer?</h2>
+        <p class="subtitle">Click your favorite.</p>
         <div class="stats">
-          <span><strong id="stat-songs">0</strong> canciones</span>
+          <span><strong id="stat-songs">0</strong> songs</span>
         </div>
       </div>
 
@@ -38,7 +38,7 @@
             <div class="card-title" data-field="title"></div>
             <div class="card-artist" data-field="artist"></div>
           </div>
-          <div class="card-pick">Elegir</div>
+          <div class="card-pick">Pick</div>
         </div>
 
         <div class="vs">VS</div>
@@ -50,18 +50,18 @@
             <div class="card-title" data-field="title"></div>
             <div class="card-artist" data-field="artist"></div>
           </div>
-          <div class="card-pick">Elegir</div>
+          <div class="card-pick">Pick</div>
         </div>
       </div>
 
       <div class="skip-row">
-        <button id="skip-btn" class="ghost">Saltar duelo →</button>
+        <button id="skip-btn" class="ghost">Skip duel →</button>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <span>Ranking compartido y persistente. Tu voto cuenta para todos.</span>
+    <span>Shared, persistent ranking. Your vote counts for everyone.</span>
   </footer>
 
   <script type="module" src="app.js"></script>

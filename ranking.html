@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,7 +15,7 @@
       </a>
     </div>
     <nav class="nav">
-      <a href="/" class="nav-link">Votar</a>
+      <a href="/" class="nav-link">Vote</a>
       <a href="/ranking.html" class="nav-link active">Ranking</a>
     </nav>
   </header>
@@ -23,27 +23,26 @@
   <main>
     <section id="ranking" class="ranking ranking-page">
       <div class="ranking-head">
-        <h2>Ranking general</h2>
-        <p class="subtitle">Ordenado por rating ELO. Rating inicial: 1500.</p>
+        <h2>Overall ranking</h2>
         <div class="stats">
-          <span><strong id="stat-songs">0</strong> canciones</span>
+          <span><strong id="stat-songs">0</strong> songs</span>
         </div>
         <div class="ranking-controls">
-          <label for="ranking-filter">Filtrar por edición</label>
+          <label for="ranking-filter">Filter by edition</label>
           <select id="ranking-filter" class="filter-select">
-            <option value="">Todas las ediciones</option>
+            <option value="">All editions</option>
           </select>
           <span class="filter-count" id="filter-count"></span>
         </div>
       </div>
       <ol id="ranking-list" class="ranking-list">
-        <li class="rank-loading">Cargando ranking…</li>
+        <li class="rank-loading">Loading ranking…</li>
       </ol>
     </section>
   </main>
 
   <footer class="footer">
-    <span>Ranking compartido y persistente.</span>
+    <span>Shared, persistent ranking.</span>
   </footer>
 
   <script type="module" src="app.js"></script>
